@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { getTextShayaris, addTextShayari, updateTextShayari, deleteTextShayari, bulkAddTextShayari } from '../services/textShayariService';
 import { addToQueue } from '../services/dailyQueueService';
 import { getCategories } from '../services/categoryService';
-import { Plus, Search, Pencil, Trash2, Loader2, Copy, Send, Layers } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, Loader2, Copy, Send, Layers, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const TextShayari = () => {
@@ -46,7 +46,7 @@ const TextShayari = () => {
       const data = await getTextShayaris(catId);
       setItems(data);
     } catch (err) {
-      toast.error('Failed to load shayaris');
+      toast.error('Failed to load: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -58,7 +58,8 @@ const TextShayari = () => {
       fetchShayaris(null);
     } else {
       setActiveCategory(catId);
-      fetchShayaris(catId);
+      const catName = categories.find(c => c.id === catId)?.name;
+      fetchShayaris(catName);
     }
   };
 
@@ -158,6 +159,40 @@ const TextShayari = () => {
       const formatted = formData.content.replace(/\n\s*\n/g, '\n').trim();
       setFormData({ ...formData, content: formatted });
       toast.success('Text formatted!');
+    }
+  };
+
+  const handleGenerateAI = async () => {
+    if (!formData.categoryId) {
+      toast.error('Please select a category first!');
+      return;
+    }
+    const catName = categories.find(c => c.id === formData.categoryId)?.name;
+    if (!catName) return;
+
+    try {
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (!apiKey) {
+        toast.error('API Key is missing in .env file!');
+        return;
+      }
+      
+      toast.loading('Generating Shayari with AI...', { id: 'ai-toast' });
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      
+      const prompt = `Write a deep, poetic, and high-quality 2-line Urdu shayari (in Urdu script) for the category: "${catName}".
+      Return ONLY the plain Urdu text, nothing else. No english translation. No quotes.`;
+      
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().trim().replace(/['"]/g, '');
+      
+      setFormData({ ...formData, content: text });
+      toast.success('Generated successfully!', { id: 'ai-toast' });
+    } catch (err) {
+      console.error(err);
+      toast.error('AI Generation Failed: ' + err.message, { id: 'ai-toast' });
     }
   };
 
@@ -323,9 +358,14 @@ const TextShayari = () => {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <label className="text-sm font-bold text-gold/60 uppercase">Urdu Content *</label>
-                  <button type="button" onClick={() => handleSmartFormat(false)} className="text-xs text-gold hover:underline">
-                    Clean Format ✨
-                  </button>
+                  <div className="flex gap-4">
+                    <button type="button" onClick={handleGenerateAI} className="text-xs text-blue-400 font-bold hover:underline flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" /> Generate AI
+                    </button>
+                    <button type="button" onClick={() => handleSmartFormat(false)} className="text-xs text-gold hover:underline">
+                      Clean Format ✨
+                    </button>
+                  </div>
                 </div>
                 <textarea
                   required
