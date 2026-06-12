@@ -1,73 +1,64 @@
-import { supabase } from '../supabase/config';
+import { collection, getDocs, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy, where, limit } from 'firebase/firestore';
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
+import { db, storage } from '../firebase/config';
 import { v4 as uuidv4 } from 'uuid';
 
+const COLLECTION_NAME = 'image_shayari';
+const photoCol = collection(db, COLLECTION_NAME);
+
 export const getPhotoShayaris = async (categoryName = null) => {
-  let query = supabase.from('image_shayari').select('*').order('created_at', { ascending: false });
+  let q;
   if (categoryName) {
-    query = query.eq('category', categoryName);
+    q = query(photoCol, where('categoryName', '==', categoryName), limit(200));
+  } else {
+    q = query(photoCol, orderBy('createdAt', 'desc'), limit(200));
   }
-  const { data, error } = await query;
-  if (error) {
-    console.error("Supabase fetch error:", error);
-    return [];
+  const snapshot = await getDocs(q);
+  let results = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  if (categoryName) {
+    results.sort((a, b) => {
+      const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return timeB - timeA;
+    });
   }
-  
-  return data.map(item => ({
-    id: item.id,
-    imageUrl: item.image_url,
-    categoryId: item.category, // assuming category in supabase holds the ID for simplicity
-    categoryName: item.category,
-    createdAt: item.created_at
-  }));
+  return results;
 };
 
 export const uploadImage = async (file) => {
   const fileExt = file.name.split('.').pop();
-  const fileName = `${uuidv4()}.${fileExt}`;
+  const fileName = `ehsaasverse-images/${uuidv4()}.${fileExt}`;
+  const storageRef = ref(storage, fileName);
   
-  const { data, error } = await supabase.storage
-    .from('ehsaasverse-images')
-    .upload(fileName, file);
-    
-  if (error) {
-    console.error("Supabase storage error:", error);
-    throw error;
-  }
-  
-  const { data: { publicUrl } } = supabase.storage
-    .from('ehsaasverse-images')
-    .getPublicUrl(fileName);
-    
-  return publicUrl;
+  const snapshot = await uploadBytesResumable(storageRef, file);
+  const downloadURL = await getDownloadURL(snapshot.ref);
+  return downloadURL;
 };
 
 export const addPhotoShayari = async (data) => {
-  const { data: insertedData, error } = await supabase
-    .from('image_shayari')
-    .insert([{
-      title: 'Untitled',
-      category: data.categoryId, 
-      image_url: data.imageUrl,
-      status: data.status || 'published'
-    }]);
-    
-  if (error) {
-    console.error("Supabase insert error:", error);
-    throw error;
-  }
-  return insertedData;
+  return await addDoc(photoCol, {
+    imageUrl: data.imageUrl,
+    caption: data.caption || '',
+    categoryId: data.categoryId,
+    categoryName: data.categoryName,
+    status: data.status || 'published',
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
 };
 
 export const deletePhotoShayari = async (id, imageUrl) => {
-  // delete from storage
+  // Delete from Firebase Storage
   if (imageUrl) {
-    const fileName = imageUrl.split('/').pop();
-    await supabase.storage.from('ehsaasverse-images').remove([fileName]);
+    try {
+      const storageRef = ref(storage, imageUrl);
+      await deleteObject(storageRef);
+    } catch (err) {
+      console.warn('Could not delete from storage (may already be gone):', err.message);
+    }
   }
-  
-  const { error } = await supabase.from('image_shayari').delete().eq('id', id);
-  if (error) {
-    console.error("Supabase delete error:", error);
-    throw error;
-  }
+  // Delete from Firestore
+  const docRef = doc(db, COLLECTION_NAME, id);
+  return await deleteDoc(docRef);
 };

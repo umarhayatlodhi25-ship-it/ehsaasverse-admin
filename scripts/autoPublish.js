@@ -1,13 +1,7 @@
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
-import { createClient } from '@supabase/supabase-js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const supabase = createClient(
-  "https://jgdrdtirmuvkoznfuuog.supabase.co",
-  "sb_publishable_23VXzWVp2ofyGLegPbOMBw_rElW679g"
-);
 
 // Initialize Firebase Admin with Service Account
 const serviceAccountKeyStr = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -92,16 +86,16 @@ async function run() {
         };
 
         if (item.type === 'photo') {
-          const { error } = await supabase.from('image_shayari').insert([{
-              title: 'Untitled',
-              category: item.categoryName,
-              image_url: item.imageUrl,
-              status: 'published'
-          }]);
-          if (error) {
-              console.error("Error publishing photo to Supabase:", error);
-              continue;
-          }
+          await db.collection('image_shayari').add({
+            imageUrl: item.imageUrl || '',
+            caption: item.caption || '',
+            categoryId: item.categoryId || item.categoryName?.toLowerCase() || '',
+            categoryName: item.categoryName || 'Unknown',
+            status: 'published',
+            isDaily: true,
+            publishDate: new Date().toISOString(),
+            createdAt: FieldValue.serverTimestamp()
+          });
         } else {
           payload.content = item.content;
           await db.collection('text_shayari').add(payload);
