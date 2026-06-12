@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { getPhotoShayaris, addPhotoShayari, deletePhotoShayari, uploadImage } from '../services/photoShayariService';
 import { addToQueue } from '../services/dailyQueueService';
 import { getCategories } from '../services/categoryService';
-import { Plus, Trash2, Loader2, Image as ImageIcon, Layers, Send, UploadCloud, X } from 'lucide-react';
+import { Plus, Trash2, Loader2, Image as ImageIcon, Layers, Send, UploadCloud, X, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const PhotoShayari = () => {
@@ -19,6 +19,7 @@ const PhotoShayari = () => {
   const [previewUrls, setPreviewUrls] = useState([]);
   const [categoryId, setCategoryId] = useState('');
   const [sendToQueue, setSendToQueue] = useState(false);
+  const [aiCaption, setAiCaption] = useState('');
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -56,7 +57,8 @@ const PhotoShayari = () => {
       fetchShayaris(null);
     } else {
       setActiveCategory(catId);
-      fetchShayaris(catId);
+      const catName = categories.find(c => c.id === catId)?.name;
+      fetchShayaris(catName);
     }
   };
 
@@ -110,12 +112,14 @@ const PhotoShayari = () => {
           await addToQueue({
             type: 'photo',
             imageUrl: url,
+            caption: aiCaption || '',
             categoryId: categoryObj.id,
             categoryName: categoryObj.name
           });
         } else {
           await addPhotoShayari({
             imageUrl: url,
+            caption: aiCaption || '',
             categoryId: categoryObj.id,
             categoryName: categoryObj.name
           });
@@ -134,6 +138,7 @@ const PhotoShayari = () => {
       setPreviewUrls([]);
       setCategoryId('');
       setSendToQueue(false);
+      setAiCaption('');
       
       if (!sendToQueue) fetchShayaris(activeCategory);
     } catch (err) {
@@ -141,6 +146,30 @@ const PhotoShayari = () => {
       console.error(err);
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleGenerateAICaption = async () => {
+    if (!categoryId) {
+      toast.error('Please select a category first!');
+      return;
+    }
+    const catName = categories.find(c => c.id === categoryId)?.name;
+    if (!catName) return;
+    try {
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (!apiKey) { toast.error('API Key missing in .env file!'); return; }
+      toast.loading('Generating caption with AI...', { id: 'ai-photo-toast' });
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+      const prompt = `Write a beautiful, deep 2-line Urdu shayari (in Urdu script) for the category: "${catName}". Return ONLY the plain Urdu text, nothing else.`;
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().trim().replace(/['"]/g, '');
+      setAiCaption(text);
+      toast.success('Caption generated!', { id: 'ai-photo-toast' });
+    } catch (err) {
+      toast.error('AI failed: ' + err.message, { id: 'ai-photo-toast' });
     }
   };
 
@@ -309,6 +338,24 @@ const PhotoShayari = () => {
                   ))}
                 </div>
               )}
+
+              {/* AI Caption Generator */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-bold text-gold/60 uppercase">Urdu Caption (Optional)</label>
+                  <button type="button" onClick={handleGenerateAICaption} className="text-xs text-blue-400 font-bold hover:underline flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> Generate AI Caption
+                  </button>
+                </div>
+                <textarea
+                  rows="3"
+                  dir="rtl"
+                  value={aiCaption}
+                  onChange={(e) => setAiCaption(e.target.value)}
+                  className="w-full bg-background border border-primary-light/20 text-white rounded-2xl p-4 urdu-font text-xl focus:ring-2 focus:ring-gold outline-none"
+                  placeholder="یہاں کلام لکھیں یا AI سے بنوائیں..."
+                />
+              </div>
 
               {/* Toggle to Send to Queue or Publish Now */}
               <div className="flex items-center gap-3 p-4 bg-background/50 rounded-2xl border border-primary-light/20">

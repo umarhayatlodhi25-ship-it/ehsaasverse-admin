@@ -32,6 +32,7 @@ const db = getFirestore();
 const messaging = getMessaging();
 
 const PUBLISH_COUNT = 2; // How many items to publish per run
+const QUEUE_MIN_SIZE = 5; // Minimum pending items to keep in queue (auto-fill if below)
 const FALLBACK_CATEGORIES = ['Motivation', 'Intezar', 'Love', 'Khwab', 'Dua', 'Aansu', 'Bewafa', 'Friendship', 'Ishq', 'Barish', 'Mashhoor', 'Tanhai', 'Judai', 'Sad', 'Zindagi', 'Yaad', 'Dard'];
 
 async function generateAIShayari() {
@@ -116,10 +117,10 @@ async function run() {
       }
     }
 
-    // 3. AI Fallback for missing items
+    // 3. AI Fallback for missing published items
     const missingCount = PUBLISH_COUNT - publishedCount;
     if (missingCount > 0) {
-      console.log(`Queue is short. Generating ${missingCount} shayaris using AI...`);
+      console.log(`Queue is short. Generating ${missingCount} shayaris using AI and publishing directly...`);
       for (let i = 0; i < missingCount; i++) {
         try {
           const aiData = await generateAIShayari();
@@ -141,6 +142,38 @@ async function run() {
           console.error("AI Generation failed for this iteration:", aiErr.message);
         }
       }
+    }
+
+    // 4. Auto-fill Daily Queue with AI if queue is running low
+    const pendingSnapshot = await db.collection('daily_queue')
+      .where('status', '==', 'pending')
+      .limit(QUEUE_MIN_SIZE + 1)
+      .get();
+    const pendingCount = pendingSnapshot.size;
+    console.log(`Current pending items in Daily Queue: ${pendingCount}`);
+
+    if (pendingCount < QUEUE_MIN_SIZE) {
+      const toAdd = QUEUE_MIN_SIZE - pendingCount;
+      console.log(`Queue is low! Auto-filling ${toAdd} AI shayaris into Daily Queue...`);
+      for (let i = 0; i < toAdd; i++) {
+        try {
+          const aiData = await generateAIShayari();
+          await db.collection('daily_queue').add({
+            type: 'text',
+            content: aiData.content,
+            categoryId: aiData.categoryName.toLowerCase(),
+            categoryName: aiData.categoryName,
+            status: 'pending',
+            isAiGenerated: true,
+            createdAt: FieldValue.serverTimestamp()
+          });
+          console.log(`Added AI shayari to Daily Queue: ${aiData.categoryName}`);
+        } catch (qErr) {
+          console.error("Failed to add AI shayari to queue:", qErr.message);
+        }
+      }
+    } else {
+      console.log('Daily Queue has enough pending items. No AI fill needed.');
     }
 
     console.log(`Successfully published ${publishedCount} shayaris in total.`);
