@@ -1,16 +1,28 @@
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, where, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, where, writeBatch, limit } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 const COLLECTION_NAME = 'text_shayari';
 const shayariCol = collection(db, COLLECTION_NAME);
 
-export const getTextShayaris = async (categoryId = null) => {
-  let q = query(shayariCol, orderBy('createdAt', 'desc'));
-  if (categoryId) {
-    q = query(shayariCol, where('categoryId', '==', categoryId), orderBy('createdAt', 'desc'));
+export const getTextShayaris = async (categoryName = null) => {
+  let q;
+  if (categoryName) {
+    q = query(shayariCol, where('categoryName', '==', categoryName), limit(300));
+  } else {
+    q = query(shayariCol, orderBy('createdAt', 'desc'), limit(300));
   }
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  let results = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  
+  if (categoryName) {
+    // Sort client-side to avoid needing a composite index in Firestore
+    results.sort((a, b) => {
+      const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return timeB - timeA;
+    });
+  }
+  return results;
 };
 
 export const addTextShayari = async (data) => {

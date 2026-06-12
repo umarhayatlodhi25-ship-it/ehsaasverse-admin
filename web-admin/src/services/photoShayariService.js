@@ -1,10 +1,10 @@
 import { supabase } from '../supabase/config';
 import { v4 as uuidv4 } from 'uuid';
 
-export const getPhotoShayaris = async (categoryId = null) => {
+export const getPhotoShayaris = async (categoryName = null) => {
   let query = supabase.from('image_shayari').select('*').order('created_at', { ascending: false });
-  if (categoryId) {
-    query = query.eq('category', categoryId);
+  if (categoryName) {
+    query = query.eq('category', categoryName);
   }
   const { data, error } = await query;
   if (error) {
