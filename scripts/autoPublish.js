@@ -40,8 +40,8 @@ async function generateAIShayari() {
     throw new Error("GEMINI_API_KEY missing. Cannot use AI fallback.");
   }
   const genAI = new GoogleGenerativeAI(apiKey);
-  // Using gemini-1.5-flash as it's fast and reliable for simple generation
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  // Using gemini-2.5-flash as it's fast and reliable for simple generation
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   
   const randomCategory = FALLBACK_CATEGORIES[Math.floor(Math.random() * FALLBACK_CATEGORIES.length)];
   const prompt = `Write a deep, poetic, and high-quality 2-line Urdu shayari (in Urdu script) for the category: "${randomCategory}".

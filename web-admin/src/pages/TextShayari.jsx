@@ -180,7 +180,7 @@ const TextShayari = () => {
       toast.loading('Generating Shayari with AI...', { id: 'ai-toast' });
       const { GoogleGenerativeAI } = await import('@google/generative-ai');
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
       
       const prompt = `Write a deep, poetic, and high-quality 2-line Urdu shayari (in Urdu script) for the category: "${catName}".
       Return ONLY the plain Urdu text, nothing else. No english translation. No quotes.`;
