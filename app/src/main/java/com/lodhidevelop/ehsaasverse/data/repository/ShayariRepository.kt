@@ -31,7 +31,7 @@ class ShayariRepository(private val context: Context) {
     private val db = AppDatabase.getDatabase(context)
     private val shayariDao = db.shayariDao()
     private val firestore = FirebaseFirestore.getInstance()
-    private val COLLECTION_NAME = "verse_official_v1"
+    private val COLLECTION_NAME = "text_shayari"
 
     private val supabase = createSupabaseClient(
         supabaseUrl = "https://jgdrdtirmuvkoznfuuog.supabase.co",
