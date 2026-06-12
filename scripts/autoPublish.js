@@ -1,7 +1,13 @@
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
+import { createClient } from '@supabase/supabase-js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const supabase = createClient(
+  "https://navwtxcpfllvsthidwew.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdnd0eGNwZmxsdnN0aGlkd2V3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyODI2NTYsImV4cCI6MjA5Njg1ODY1Nn0.PQoeivttm3vJyhNmD0oi1wriBVTC1He1jLAlrcI6H-g"
+);
 
 // Initialize Firebase Admin with Service Account
 const serviceAccountKeyStr = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -86,16 +92,16 @@ async function run() {
         };
 
         if (item.type === 'photo') {
-          await db.collection('image_shayari').add({
-            imageUrl: item.imageUrl || '',
-            caption: item.caption || '',
-            categoryId: item.categoryId || item.categoryName?.toLowerCase() || '',
-            categoryName: item.categoryName || 'Unknown',
-            status: 'published',
-            isDaily: true,
-            publishDate: new Date().toISOString(),
-            createdAt: FieldValue.serverTimestamp()
-          });
+          const { error } = await supabase.from('image_shayari').insert([{
+            title: 'Untitled',
+            category: item.categoryName,
+            image_url: item.imageUrl,
+            status: 'published'
+          }]);
+          if (error) {
+            console.error("Error publishing photo to Supabase:", error);
+            continue;
+          }
         } else {
           payload.content = item.content;
           await db.collection('text_shayari').add(payload);
