@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EhsaasVerse PRO Admin v3.0</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root { --primary: #8B1A24; --secondary: #4E0D14; --gold: #E5C68A; --sidebar: 260px; }
+        body { font-family: 'Poppins', sans-serif; background: #f0f2f5; margin: 0; overflow-x: hidden; }
+        .sidebar { width: var(--sidebar); height: 100vh; position: fixed; background: linear-gradient(180deg, var(--secondary) 0%, #000 100%); color: white; padding-top: 2rem; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.2); }
+        .main-content { margin-left: var(--sidebar); padding: 2.5rem; min-height: 100vh; }
+        .header-banner { background: linear-gradient(90deg, var(--primary) 0%, var(--gold) 100%); padding: 20px; border-radius: 15px; color: white; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .urdu-text { font-family: 'Noto Nastaliq Urdu', serif; direction: rtl; text-align: right; font-size: 1.3rem; line-height: 2.4; }
+        .card { border: none; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 1.5rem; transition: 0.3s; background: white; }
+        .nav-link { color: rgba(255,255,255,0.6); padding: 1rem 1.5rem; margin: 0.5rem 1rem; border-radius: 12px; display: flex; align-items: center; transition: 0.3s; text-decoration: none; }
+        .nav-link:hover, .nav-link.active { background: var(--gold); color: var(--secondary) !important; font-weight: 700; }
+        .nav-link i { font-size: 1.2rem; margin-right: 15px; }
+        .btn-maroon { background: var(--primary); color: white; border-radius: 12px; padding: 0.7rem 1.8rem; font-weight: 600; border: none; }
+        .img-preview { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 15px; background: #eee; border: 3px solid white; }
+        #loginSection { height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(45deg, var(--secondary), var(--primary)); }
+        #dashboard { display: none; }
+        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.98); display: none; justify-content: center; align-items: center; z-index: 2000; flex-direction: column; }
+        .badge-cat { background: var(--gold); color: var(--secondary); font-weight: 700; padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; }
+        @media (max-width: 768px) { .sidebar { width: 100%; height: auto; position: relative; } .main-content { margin-left: 0; padding: 1rem; } }
+    </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loader">
+    <div class="spinner-border text-danger mb-3" style="width: 3rem; height: 3rem;"></div>
+    <h5 class="text-secondary fw-bold" id="loaderText">Processing Data...</h5>
+</div>
+
+<!-- Login -->
+<div id="loginSection">
+    <div class="card p-5 text-center shadow-lg" style="width: 420px; border-radius: 30px;">
+        <div class="mb-3"><i class="bi bi-feather text-danger" style="font-size: 3rem;"></i></div>
+        <h2 class="fw-bold mb-1">EhsaasVerse</h2>
+        <p class="text-muted mb-4">Cloud Admin Control v3.0</p>
+        <div class="text-start mb-3">
+            <label class="small fw-bold text-secondary">Email Address</label>
+            <input type="email" id="loginEmail" class="form-control p-3 rounded-4 shadow-sm" value="lodhitools@gmail.com">
+        </div>
+        <div class="text-start mb-4">
+            <label class="small fw-bold text-secondary">Password</label>
+            <input type="password" id="loginPass" class="form-control p-3 rounded-4 shadow-sm" placeholder="••••••••">
+        </div>
+        <button onclick="loginWithEmail()" class="btn btn-maroon w-100 py-3 mb-3 shadow">Login to Dashboard</button>
+        <button onclick="loginWithGoogle()" class="btn btn-outline-danger w-100 py-3 rounded-4"><i class="bi bi-google me-2"></i> Google Admin Login</button>
+    </div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard">
+    <div class="sidebar shadow">
+        <div class="px-4 mb-5"><h3 class="fw-bold">EhsaasVerse</h3><span class="badge bg-gold text-dark">PRO MANAGER</span></div>
+        <nav class="nav flex-column">
+            <a class="nav-link active" data-bs-toggle="tab" href="#textSection"><i class="bi bi-blockquote-left"></i> Text Shayari</a>
+            <a class="nav-link" data-bs-toggle="tab" href="#photoSection"><i class="bi bi-images"></i> Photo Shayari</a>
+            <a class="nav-link" data-bs-toggle="tab" href="#aiSection"><i class="bi bi-stars"></i> AI Magic Box</a>
+            <a class="nav-link" data-bs-toggle="tab" href="#notifySection"><i class="bi bi-bell-fill"></i> Notifications</a>
+            <hr class="mx-3 opacity-25 my-4">
+            <a class="nav-link text-warning" href="#" onclick="logout()"><i class="bi bi-power"></i> Sign Out</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="header-banner shadow-sm">
+            <div><h4 class="fw-bold mb-0">Production Dashboard</h4><p class="mb-0 small opacity-75">Notification System Enabled</p></div>
+            <div class="d-flex gap-4">
+                <div class="text-center"><div class="fw-bold" id="statText">0</div><small>Shayari</small></div>
+                <div class="text-center"><div class="fw-bold" id="statPhoto">0</div><small>Photos</small></div>
+            </div>
+        </div>
+
+        <div class="tab-content">
+            <!-- Text Section -->
+            <div class="tab-pane fade show active" id="textSection">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold text-secondary">Manage Text Shayari</h5>
+                    <div class="btn-group gap-2">
+                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#bulkTextModal">Bulk Add</button>
+                        <button class="btn btn-maroon btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#textModal" onclick="resetTextForm()">+ New Shayari</button>
+                    </div>
+                </div>
+                <div class="card p-3">
+                    <div class="table-responsive" style="max-height: 60vh;">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light sticky-top"><tr><th>Verse Content</th><th>Category</th><th class="text-center">Action</th></tr></thead>
+                            <tbody id="textTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3"><button id="loadMoreBtn" onclick="loadMoreText()" class="btn btn-sm btn-outline-danger px-4 rounded-pill">Load More</button></div>
+                </div>
+            </div>
+
+            <!-- Photo Section -->
+            <div class="tab-pane fade" id="photoSection">
+                <div class="d-flex justify-content-between mb-4">
+                    <h5 class="fw-bold text-secondary">Photo Gallery</h5>
+                    <div class="btn-group gap-2">
+                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#bulkPhotoModal">Bulk Photo Add</button>
+                        <button class="btn btn-maroon btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#photoModal">+ Add Single</button>
+                    </div>
+                </div>
+                <div class="row g-3" id="photoGrid"></div>
+            </div>
+
+            <!-- Notification Section -->
+            <div class="tab-pane fade" id="notifySection">
+                <div class="card p-5">
+                    <h4 class="fw-bold text-danger mb-4 border-bottom pb-2">Manual Notification Push</h4>
+                    <p class="text-muted small mb-4">Send a custom notification to all EhsaasVerse users instantly.</p>
+                    <div class="mb-3">
+                        <label class="small fw-bold">Notification Title</label>
+                        <input type="text" id="notifTitle" class="form-control p-3 rounded-4" placeholder="Nayi Shayari Update!">
+                    </div>
+                    <div class="mb-4">
+                        <label class="small fw-bold">Message Body</label>
+                        <textarea id="notifBody" class="form-control p-3 rounded-4" rows="3" placeholder="Humne abhi Love category mein nayi shayari add ki hai. Abhi check karein!"></textarea>
+                    </div>
+                    <div class="alert alert-warning small">
+                        <i class="bi bi-info-circle me-2"></i><b>Note:</b> Make sure your FCM Server Key is set in the <b>Settings/Config</b> or provided below for the first time.
+                    </div>
+                    <button onclick="pushNotification()" class="btn btn-danger btn-lg w-100 py-3 rounded-4 shadow-lg">
+                        <i class="bi bi-send-fill me-2"></i> Send to All Users
+                    </button>
+                    <div id="notifStatus" class="mt-3 text-center fw-bold"></div>
+                </div>
+            </div>
+
+            <!-- AI Section -->
+            <div class="tab-pane fade" id="aiSection">
+                <div class="card p-5 text-center">
+                    <h4 class="fw-bold">AI Bulk Generator</h4>
+                    <p class="text-muted small">Automatic 5 shayaris generation.</p>
+                    <div class="d-flex justify-content-center gap-2 mb-3">
+                        <select id="aiCategory" class="form-select w-auto"><option value="Love">Love</option><option value="Sad">Sad</option><option value="Motivation">Motivation</option></select>
+                        <button onclick="generateAI()" class="btn btn-dark" id="aiBtn">Generate & Save</button>
+                    </div>
+                    <div id="aiStatus" class="small text-primary fw-bold"></div>
+                </div>
+            </div>
+
+            <!-- Stats Section -->
+            <div class="tab-pane fade" id="statsSection">
+                <div class="row g-4 text-center">
+                    <div class="col-6"><div class="card p-4"><h1 id="totalS" class="fw-bold text-danger">0</h1><p>Total Text</p></div></div>
+                    <div class="col-6"><div class="card p-4"><h1 id="totalP" class="fw-bold text-primary">0</h1><p>Total Photo</p></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="bulkTextModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content rounded-4 border-0 shadow-lg">
+    <div class="modal-header bg-danger text-white p-3"><h5 class="modal-title">Bulk Text Upload</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body p-4">
+        <textarea id="bulkTextPaste" class="form-control urdu-text mb-3 shadow-sm" rows="10" placeholder="Enter one shayari per line..."></textarea>
+        <div class="row g-2 mb-3">
+            <div class="col-6"><select id="bulkTextCat" class="form-select"><option value="Love">Love</option><option value="Sad">Sad</option><option value="Motivation">Motivation</option><option value="Friendship">Friendship</option></select></div>
+            <div class="col-6"><input type="text" id="bulkTextPoet" class="form-control" value="Unknown"></div>
+        </div>
+        <div class="form-check mb-4"><input class="form-check-input" type="checkbox" id="bulkTextNotify" checked><label class="form-check-label small" for="bulkTextNotify">Send notification to users after upload</label></div>
+        <button onclick="processBulkText()" class="btn btn-danger w-100 py-3 fw-bold rounded-3">Push Bulk Content</button>
+    </div>
+</div></div></div>
+
+<div class="modal fade" id="bulkPhotoModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content rounded-4 border-0 shadow-lg">
+    <div class="modal-header bg-primary text-white p-3"><h5 class="modal-title">Bulk Photo Import</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body p-4">
+        <textarea id="bulkPhotoPaste" class="form-control mb-3 shadow-sm" rows="10" placeholder="Enter URLs (one per line)..."></textarea>
+        <select id="bulkPhotoCat" class="form-select mb-4"><option value="General">General</option><option value="Love">Love</option><option value="Sad">Sad</option></select>
+        <button onclick="processBulkPhoto()" class="btn btn-primary w-100 py-3 fw-bold rounded-3">Import Bulk Photos</button>
+    </div>
+</div></div></div>
+
+<div class="modal fade" id="textModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content rounded-4 border-0 shadow">
+    <div class="modal-header bg-primary text-white p-3"><h5 class="modal-title">Shayari Editor</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body p-4">
+        <input type="hidden" id="textEditId">
+        <div class="mb-3"><label class="form-label fw-bold">Urdu Text</label><textarea id="textUrdu" class="form-control urdu-text" rows="3"></textarea></div>
+        <div class="row mb-3"><div class="col-6"><label class="small fw-bold">Roman</label><input type="text" id="textRoman" class="form-control"></div><div class="col-6"><label class="small fw-bold">English</label><input type="text" id="textEnglish" class="form-control"></div></div>
+        <div class="row mb-4"><div class="col-6"><label class="small fw-bold">Category</label><select id="textCategory" class="form-select"><option value="Love">Love</option><option value="Sad">Sad</option><option value="Motivation">Motivation</option><option value="Friendship">Friendship</option></select></div><div class="col-6"><label class="small fw-bold">Poet</label><input type="text" id="textPoet" class="form-control" value="Unknown"></div></div>
+        <div class="form-check mb-4"><input class="form-check-input" type="checkbox" id="singleTextNotify" checked><label class="form-check-label small">Notify users instantly</label></div>
+        <button class="btn btn-maroon w-100 py-3 shadow" onclick="saveText()">Save & Publish</button>
+    </div>
+</div></div></div>
+
+<div class="modal fade" id="photoModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content rounded-4 border-0 shadow">
+    <div class="modal-header bg-dark text-white p-3"><h5 class="modal-title">Photo Uploader</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body p-4">
+        <div class="mb-3"><input type="text" id="photoUrl" class="form-control" placeholder="Image URL"></div>
+        <div class="mb-3"><input type="text" id="photoUrdu" class="form-control urdu-text" placeholder="Urdu Overlay"></div>
+        <div class="mb-4"><select id="photoCategory" class="form-select"><option value="General">General</option><option value="Love">Love</option><option value="Sad">Sad</option></select></div>
+        <button class="btn btn-maroon w-100 py-3 shadow" onclick="savePhoto()">Add to Cloud Mehfil</button>
+    </div>
+</div></div></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, limit, startAfter, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const firebaseConfig = { apiKey: "AIzaSyBKowDs1MHYae5V0ZdvGhR2WnWvamMwFEY", authDomain: "ehsaasverse-14d5d.firebaseapp.com", projectId: "ehsaasverse-14d5d", storageBucket: "ehsaasverse-14d5d.firebasestorage.app", messagingSenderId: "825232716466", appId: "1:825232716466:web:f2c1f6574d3eb063680fab" };
+    // LEGACY SERVER KEY (Replace with your actual key from Firebase Console > Cloud Messaging)
+    const FCM_SERVER_KEY = "AAAA2yvB_x4:APA91bE3Z-_q3M9-y3v0Qv8_G7Xp6Jm0l0vN8yXy_Z-6j0v_v-6z0v-6z0v-6z0v-6z0v-6z0v-6z0v-6z0v-6z0v-6z0v-6z0v-6z0v";
+
+    const supabase = createClient("https://jgdrdtirmuvkoznfuuog.supabase.co", "sb_publishable_23VXzWVp2ofyGLegPbOMBw_rElW679g");
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    let lastDoc = null;
+    const TEXT_COL = "verse_official_v1";
+
+    // --- Auth ---
+    window.loginWithEmail = () => { showLoader(true, "Verifying Admin..."); signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPass').value).catch(e => { alert(e.message); showLoader(false); }); };
+    window.loginWithGoogle = () => signInWithPopup(auth, provider).catch(e => alert(e.message));
+    window.logout = () => signOut(auth);
+
+    onAuthStateChanged(auth, (user) => {
+        if (user && user.email === "lodhitools@gmail.com") {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            refreshAll();
+        } else {
+            document.getElementById('loginSection').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+            if(user) signOut(auth);
+        }
+    });
+
+    // --- Data Ops ---
+    async function refreshAll() {
+        showLoader(true, "Syncing Cloud Data..."); lastDoc = null;
+        document.getElementById('textTableBody').innerHTML = "";
+        try { await Promise.all([loadMoreText(), loadPhotos()]); } catch(e) {}
+        showLoader(false);
+    }
+
+    window.loadMoreText = async () => {
+        try {
+            const q = lastDoc ? query(collection(db, TEXT_COL), orderBy("timestamp", "desc"), startAfter(lastDoc), limit(25)) : query(collection(db, TEXT_COL), orderBy("timestamp", "desc"), limit(25));
+            const snap = await getDocs(q);
+            if (snap.empty) { document.getElementById('loadMoreBtn').style.display = 'none'; return; }
+            lastDoc = snap.docs[snap.docs.length - 1];
+            const tbody = document.getElementById('textTableBody');
+            snap.forEach(d => {
+                const it = d.data();
+                tbody.innerHTML += `<tr class="border-bottom"><td><div class="urdu-text small" style="font-size:1.1rem">${it.urdu}</div><div class="small text-muted font-italic">${it.roman || '-'}</div></td><td><span class="badge-cat">${it.category}</span></td><td class="text-center"><button onclick="editText('${d.id}', \`${it.urdu.replace(/`/g, '\\`')}\`, \`${(it.roman||'').replace(/`/g, '\\`')}\`, \`${(it.english||'').replace(/`/g, '\\`')}\`, '${it.category}', '${it.poet}')" class="btn btn-sm btn-link"><i class="bi bi-pencil"></i></button><button onclick="deleteT('${d.id}')" class="btn btn-sm btn-link text-danger"><i class="bi bi-trash"></i></button></td></tr>`;
+            });
+            updateCounts();
+        } catch(e) { console.warn("Index fallback."); }
+    };
+
+    async function loadPhotos() {
+        const { data } = await supabase.from('photo_shayari').select('*').order('created_at', { ascending: false });
+        const grid = document.getElementById('photoGrid');
+        grid.innerHTML = "";
+        if(data) data.forEach(p => {
+            grid.innerHTML += `<div class="col-6 col-md-3"><div class="card h-100 p-2 shadow-sm"><img src="${p.image_url}" class="img-preview" loading="lazy"><div class="p-2"><span class="badge-cat mb-1 d-inline-block">${p.category}</span><div class="small urdu-text" style="font-size:0.8rem; height:40px; overflow:hidden">${p.urdu || ''}</div><button onclick="deleteP('${p.id}')" class="btn btn-sm btn-outline-danger w-100 border-0 mt-2">Delete</button></div></div></div>`;
+        });
+        updateCounts();
+    }
+
+    // --- Notification Core ---
+    window.pushNotification = async (title = "", body = "") => {
+        const t = title || document.getElementById('notifTitle').value;
+        const b = body || document.getElementById('notifBody').value;
+        if(!t || !b) return alert("Title and Body are required!");
+
+        const statusEl = document.getElementById('notifStatus');
+        if(statusEl) statusEl.innerText = "Sending notification...";
+
+        try {
+            const response = await fetch('https://fcm.googleapis.com/fcm/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `key=${FCM_SERVER_KEY}` },
+                body: JSON.stringify({
+                    to: "/topics/new_shayari",
+                    notification: { title: t, body: b, sound: "default", icon: "ic_launcher" },
+                    data: { type: "update", category: "General" }
+                })
+            });
+            const res = await response.json();
+            if(statusEl) statusEl.innerText = "Notification sent successfully!";
+            console.log("FCM Response:", res);
+        } catch (e) {
+            if(statusEl) statusEl.innerText = "Error: " + e.message;
+            console.error("FCM Error:", e);
+        }
+    };
+
+    // --- Bulk Core ---
+    window.processBulkText = async () => {
+        const raw = document.getElementById('bulkTextPaste').value.trim();
+        const cat = document.getElementById('bulkTextCat').value;
+        const poet = document.getElementById('bulkTextPoet').value || "Unknown";
+        if(!raw) return alert("Paste content!");
+
+        const lines = raw.split('\n').filter(l => l.trim() !== "");
+        bootstrap.Modal.getInstance(document.getElementById('bulkTextModal')).hide();
+        showLoader(true, `Pushing ${lines.length} Items...`);
+
+        const batch = writeBatch(db);
+        const colRef = collection(db, TEXT_COL);
+        lines.forEach((line, i) => {
+            const newRef = doc(colRef);
+            batch.set(newRef, { urdu: line.trim(), category: cat, poet: poet, timestamp: Date.now() + i, id: Date.now() + i });
+        });
+        await batch.commit();
+
+        if(document.getElementById('bulkTextNotify').checked) {
+            await pushNotification("Nayi Shayari Available!", `Humne ${lines.length} naye klam '${cat}' category mein add kiye hain.`);
+        }
+
+        document.getElementById('bulkTextPaste').value = "";
+        alert("Bulk Success!");
+        refreshAll();
+    };
+
+    window.processBulkPhoto = async () => {
+        const raw = document.getElementById('bulkPhotoPaste').value.trim();
+        const cat = document.getElementById('bulkPhotoCat').value;
+        if(!raw) return alert("Paste URLs!");
+
+        const urls = raw.split('\n').filter(u => u.trim().startsWith("http"));
+        bootstrap.Modal.getInstance(document.getElementById('bulkPhotoModal')).hide();
+        showLoader(true, `Importing ${urls.length} Images...`);
+
+        const { error } = await supabase.from('photo_shayari').insert(urls.map(u => ({ image_url: u.trim(), category: cat })));
+        if(error) alert(error.message);
+        else {
+            await pushNotification("Mehfil Gallery Updated!", `Explore ${urls.length} new photos in EhsaasVerse.`);
+            alert("Bulk Photos Imported!");
+            refreshAll();
+        }
+    };
+
+    // --- Single Ops ---
+    window.saveText = async () => {
+        const id = document.getElementById('textEditId').value;
+        const data = { urdu: document.getElementById('textUrdu').value, roman: document.getElementById('textRoman').value, english: document.getElementById('textEnglish').value, category: document.getElementById('textCategory').value, poet: document.getElementById('textPoet').value, timestamp: Date.now() };
+        if(!data.urdu) return alert("Urdu text required!");
+        showLoader(true, "Publishing...");
+        if(id) await updateDoc(doc(db, TEXT_COL, id), data);
+        else {
+            await addDoc(collection(db, TEXT_COL), data);
+            if(document.getElementById('singleTextNotify').checked) {
+                await pushNotification("Naya Kalam Add Kiya!", data.urdu.substring(0, 50) + "...");
+            }
+        }
+        bootstrap.Modal.getInstance(document.getElementById('textModal')).hide();
+        refreshAll();
+    };
+
+    window.savePhoto = async () => {
+        const payload = { image_url: document.getElementById('photoUrl').value, urdu: document.getElementById('photoUrdu').value, category: document.getElementById('photoCategory').value };
+        if(!payload.image_url) return alert("URL required!");
+        showLoader(true, "Uploading...");
+        await supabase.from('photo_shayari').insert([payload]);
+        await pushNotification("Nayi Tasveer Add Hui!", "Check out our latest update in Mehfil-e-Tasveer.");
+        bootstrap.Modal.getInstance(document.getElementById('photoModal')).hide();
+        refreshAll();
+    };
+
+    window.deleteT = async (id) => { if(confirm("Delete?")) { showLoader(true); await deleteDoc(doc(db, TEXT_COL, id)); refreshAll(); } };
+    window.deleteP = async (id) => { if(confirm("Delete?")) { showLoader(true); await supabase.from('photo_shayari').delete().eq('id', id); refreshAll(); } };
+
+    window.generateAI = async () => {
+        const btn = document.getElementById('aiBtn'); btn.disabled = true;
+        document.getElementById('aiStatus').innerText = "AI generating...";
+        const cat = document.getElementById('aiCategory').value;
+        try {
+            const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDOvm9YbwuXT00eARa7ZREI0TAPAMxKLhA`, { method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: `Generate 5 beautiful Urdu shayaris for '${cat}'. Return ONLY a JSON array with fields 'urdu', 'roman', 'english', 'poet'.` }] }] }) });
+            const res = await r.json();
+            const list = JSON.parse(res.candidates[0].content.parts[0].text.replace(/```json|```/g, ''));
+            for(let s of list) await addDoc(collection(db, TEXT_COL), { ...s, category: cat, timestamp: Date.now() });
+            document.getElementById('aiStatus').innerText = "AI Content Published!";
+            refreshAll();
+        } catch(e) { alert("AI Error"); }
+        btn.disabled = false;
+    };
+
+    function updateCounts() {
+        const t = document.getElementById('textTableBody').children.length;
+        const p = document.getElementById('photoGrid').children.length;
+        document.getElementById('statText').innerText = t + "+";
+        document.getElementById('statPhoto').innerText = p;
+        document.getElementById('totalS').innerText = t + "+";
+        document.getElementById('totalP').innerText = p;
+    }
+
+    function showLoader(s, text = "") { document.getElementById('loader').style.display = s ? 'flex' : 'none'; if(text) document.getElementById('loaderText').innerText = text; }
+    window.editText = (id, urdu, roman, english, cat, poet) => { document.getElementById('textEditId').value = id; document.getElementById('textUrdu').value = urdu; document.getElementById('textRoman').value = roman; document.getElementById('textEnglish').value = english; document.getElementById('textCategory').value = cat; document.getElementById('textPoet').value = poet; new bootstrap.Modal(document.getElementById('textModal')).show(); };
+    window.resetTextForm = () => { document.getElementById('textEditId').value = ""; document.getElementById('textUrdu').value = ""; document.getElementById('textRoman').value = ""; document.getElementById('textEnglish').value = ""; };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "ehsaasverse-automation",
+  "version": "1.0.0",
+  "description": "Backend scripts for EhsaasVerse automation",
+  "main": "autoPublish.js",
+  "type": "module",
+  "scripts": {
+    "start": "node autoPublish.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}

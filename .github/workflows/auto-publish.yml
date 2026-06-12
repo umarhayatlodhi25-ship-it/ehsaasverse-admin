@@ -1,0 +1,34 @@
+name: Daily Auto Publish Shayari
+
+on:
+  schedule:
+    # This runs at 8 AM, 10 AM, 12 PM, 2 PM, 4 PM UTC.
+    # Since Pakistan (PKT) is UTC+5, this corresponds exactly to:
+    # 1:00 PM, 3:00 PM, 5:00 PM, 7:00 PM, 9:00 PM PKT
+    - cron: '0 8,10,12,14,16 * * *'
+  
+  # Allow manual trigger from the GitHub Actions tab if needed for testing
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        working-directory: ./scripts
+        run: npm install
+
+      - name: Run Auto Publish Script
+        working-directory: ./scripts
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node autoPublish.js

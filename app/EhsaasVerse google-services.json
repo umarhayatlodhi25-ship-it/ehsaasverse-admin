@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "825232716466",
+    "project_id": "ehsaasverse-14d5d",
+    "storage_bucket": "ehsaasverse-14d5d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:825232716466:android:76bd114fcfbc4265680fab",
+        "android_client_info": {
+          "package_name": "com.lodhidevelop.ehsaasverse"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKowDs1MHYae5V0ZdvGhR2WnWvamMwFEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

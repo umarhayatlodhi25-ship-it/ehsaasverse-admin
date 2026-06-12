@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">EhsaasVerse</string>
+    <string name="app_title">Urdu Shayari</string>
+    <string name="greeting">Assalam-o-Alaikum</string>
+    <string name="mehfil_by_mood">Mehfil by Mood</string>
+    <string name="sher_of_the_day">Sher of the Day</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_mehfil">Mehfil</string>
+    <string name="nav_posts">Posts</string>
+    <string name="nav_ai_muse">AI Muse</string>
+    <string name="nav_poets">Photos</string>
+    <string name="nav_vault">Vault</string>
+    <string name="ai_muse_title">AI Muse</string>
+    <string name="ai_muse_desc">Compose your own masterpiece with the power of AI.</string>
+    <string name="ai_prompt_hint">Describe the mood or topic (e.g., Rain and Heartbreak)</string>
+    <string name="generate_button">Generate Verse</string>
+    <string name="saved_shayari">Saved Shayari</string>
+    <string name="search_placeholder">Search by verse or poet...</string>
+    <string name="no_search_results">No Shayari found matching your search.</string>
+    <string name="empty_vault">No favorites yet.\nStart saving your favorite verses to build your vault!</string>
+    <string name="copy_urdu">Copy Urdu</string>
+    <string name="share">Share</string>
+    <string name="shayari_detail">Shayari Detail</string>
+    <string name="search_content_desc">Search</string>
+    <string name="back_content_desc">Back</string>
+    <string name="favorite_content_desc">Favorite</string>
+    <string name="see_all">See all</string>
+    <string name="beloved_poets">Beloved Poets</string>
+    <string name="roman">ROMAN</string>
+    <string name="english">ENGLISH</string>
+    <string name="copy">Copy</string>
+    <string name="nav_about">About Us</string>
+    <string name="nav_privacy">Privacy Policy</string>
+</resources>

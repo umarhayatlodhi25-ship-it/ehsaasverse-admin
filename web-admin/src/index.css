@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-gold-light;
+    background-image: radial-gradient(circle at 50% -20%, #4a0d14 0%, #140304 60%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+}
+
+.urdu-font {
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', serif;
+  line-height: 2.5;
+}
+
+.glass-card {
+  @apply bg-surface/60 backdrop-blur-lg border border-primary-light/20 shadow-2xl rounded-2xl;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #140304; 
+}
+::-webkit-scrollbar-thumb {
+  background: #8B1A24; 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #A52A36; 
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}

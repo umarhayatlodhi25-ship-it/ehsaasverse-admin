@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EhsaasVerse Web Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root { --primary-maroon: #8B1A24; --secondary-maroon: #6D121B; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar { background-color: var(--primary-maroon); color: white; min-height: 100vh; position: fixed; width: 240px; }
+        .main-content { margin-left: 240px; padding: 40px; }
+        .urdu-text { font-size: 20px; direction: rtl; text-align: right; font-family: 'Noto Nastaliq Urdu', serif; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: transform 0.2s; }
+        .nav-link { color: rgba(255,255,255,0.7); border-radius: 8px; margin-bottom: 5px; }
+        .nav-link.active { background-color: rgba(255,255,255,0.2); color: white; }
+        .btn-maroon { background-color: var(--primary-maroon); color: white; }
+        .btn-maroon:hover { background-color: var(--secondary-maroon); color: white; }
+        .img-preview { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
+        #authSection { max-width: 400px; margin: 100px auto; }
+    </style>
+</head>
+<body>
+
+<!-- Login Section -->
+<div id="authSection" class="card p-4">
+    <h3 class="text-center mb-4">Admin Portal</h3>
+    <input type="email" id="loginEmail" class="form-control mb-3" placeholder="Email" value="lodhitools@gmail.com">
+    <input type="password" id="loginPass" class="form-control mb-3" placeholder="Password" value="umar990">
+    <div class="row g-2">
+        <div class="col-6">
+            <button onclick="login()" class="btn btn-maroon w-100">Login</button>
+        </div>
+        <div class="col-6">
+            <button onclick="registerAdmin()" class="btn btn-outline-secondary w-100">Register New</button>
+        </div>
+    </div>
+    <p class="text-muted small mt-3 text-center">Use 'Register New' if you deleted the old account.</p>
+</div>
+
+<!-- Dashboard Section (Hidden by default) -->
+<div id="dashboardSection" style="display: none;">
+    <div class="sidebar p-4">
+        <h3 class="fw-bold mb-4">EhsaasVerse</h3>
+        <nav class="nav flex-column" id="adminTabs" role="tablist">
+            <a class="nav-link active" id="text-tab" data-bs-toggle="tab" href="#textSection" role="tab">Text Shayari</a>
+            <a class="nav-link" id="photo-tab" data-bs-toggle="tab" href="#photoSection" role="tab">Photo Shayari</a>
+            <hr>
+            <a class="nav-link text-danger" href="#" onclick="logout()">Logout</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="tab-content">
+            <!-- Text Shayari Section -->
+            <div class="tab-pane fade show active" id="textSection" role="tabpanel">
+                <div class="card p-4 mb-4">
+                    <h4 id="formTitle">Add New Shayari</h4>
+                    <input type="hidden" id="editId">
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-12">
+                            <textarea id="urduInput" class="form-control urdu-text" rows="3" placeholder="یہاں اپنی شاعری لکھیں..."></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <select id="categoryInput" class="form-select">
+                                <option value="Love">Love</option>
+                                <option value="Sad">Sad</option>
+                                <option value="Motivation">Motivation</option>
+                                <option value="Friendship">Friendship</option>
+                                <option value="Zindagi">Zindagi</option>
+                                <option value="Tanhai">Tanhai</option>
+                                <option value="Ishq">Ishq</option>
+                                <option value="Dua">Dua</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" id="poetInput" class="form-control" placeholder="Poet Name (Optional)">
+                        </div>
+                        <div class="col-md-4">
+                            <button id="saveBtn" onclick="saveShayari()" class="btn btn-maroon w-100">Publish Shayari</button>
+                            <button id="cancelEditBtn" onclick="resetForm()" class="btn btn-outline-secondary w-100 mt-2" style="display:none;">Cancel Edit</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-4">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h5>Live Inventory (<span id="textCount">0</span>)</h5>
+                        <button onclick="loadTextShayari()" class="btn btn-sm btn-outline-secondary">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 50%">Verse</th>
+                                    <th>Category</th>
+                                    <th>Poet</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="textTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Photo Shayari Section -->
+            <div class="tab-pane fade" id="photoSection" role="tabpanel">
+                <div class="card p-4 mb-4">
+                    <h4>Add Photo Shayari</h4>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <input type="text" id="photoUrlInput" class="form-control" placeholder="Direct Image URL (https://...)">
+                        </div>
+                        <div class="col-md-3">
+                            <select id="photoCategoryInput" class="form-select">
+                                <option value="General">General</option>
+                                <option value="Love">Love</option>
+                                <option value="Sad">Sad</option>
+                                <option value="Islamic">Islamic</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button onclick="addPhotoShayari()" class="btn btn-maroon w-100">Add Photo</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-4">
+                    <h5>Photo Inventory (<span id="photoCount">0</span>)</h5>
+                    <div class="table-responsive mt-3">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Preview</th>
+                                    <th>Category</th>
+                                    <th>URL</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="photoTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // Supabase SDK
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDr-wrPtP9do_fDD9BS1P6cVNXaxeY614k",
+        authDomain: "ehsaasverse-3eff4.firebaseapp.com",
+        projectId: "ehsaasverse-3eff4",
+        storageBucket: "ehsaasverse-3eff4.firebasestorage.app",
+        messagingSenderId: "904189877984",
+        appId: "1:904189877984:android:ac4d996ee95851a1063a85"
+    };
+
+    const supabaseUrl = "https://jgdrdtirmuvkoznfuuog.supabase.co";
+    const supabaseKey = "sb_publishable_23VXzWVp2ofyGLegPbOMBw_rElW679g";
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const TEXT_COL = "verse_official_v1";
+    const PHOTO_COL = "photo_shayari";
+
+    // --- Auth Logic ---
+    window.login = async () => {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+        } catch (e) { alert("Login Failed: " + e.message); }
+    };
+
+    window.registerAdmin = async () => {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        if(confirm("Create new account for " + email + "?")) {
+            try {
+                await createUserWithEmailAndPassword(auth, email, pass);
+                alert("Account created! Logging you in...");
+            } catch (e) { alert("Error: " + e.message); }
+        }
+    };
+
+    window.logout = () => signOut(auth);
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+            loadAllData();
+        } else {
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('dashboardSection').style.display = 'none';
+        }
+    });
+
+    // --- Global Data Load ---
+    function loadAllData() {
+        loadTextShayari();
+        loadPhotoShayari();
+    }
+
+    // --- Text Shayari Logic ---
+    window.saveShayari = async () => {
+        const id = document.getElementById('editId').value;
+        const data = {
+            urdu: document.getElementById('urduInput').value.trim(),
+            category: document.getElementById('categoryInput').value,
+            poet: document.getElementById('poetInput').value.trim() || "Unknown",
+            timestamp: Date.now()
+        };
+
+        if (!data.urdu) return alert("Please enter Shayari text");
+
+        try {
+            if (id) {
+                await updateDoc(doc(db, TEXT_COL, id), data);
+                alert("Updated successfully!");
+            } else {
+                await addDoc(collection(db, TEXT_COL), data);
+                alert("Published successfully!");
+            }
+            resetForm();
+            loadTextShayari();
+        } catch (e) { alert("Error saving: " + e.message); }
+    };
+
+    window.loadTextShayari = async () => {
+        const container = document.getElementById('textTableBody');
+        container.innerHTML = "<tr><td colspan='4' class='text-center'>Loading...</td></tr>";
+        try {
+            const snap = await getDocs(collection(db, TEXT_COL));
+            let items = [];
+            snap.forEach(d => items.push({id: d.id, ...d.data()}));
+            items.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+            document.getElementById('textCount').innerText = items.length;
+            container.innerHTML = "";
+            items.forEach(item => {
+                container.innerHTML += `
+                    <tr>
+                        <td class="urdu-text">${item.urdu.replace(/\n/g, '<br>')}</td>
+                        <td><span class="badge bg-light text-dark border">${item.category}</span></td>
+                        <td>${item.poet}</td>
+                        <td>
+                            <button onclick="editText('${item.id}', \`${item.urdu.replace(/`/g, '\\`')}\`, '${item.category}', '${item.poet}')" class="btn btn-sm btn-outline-primary me-1">Edit</button>
+                            <button onclick="deleteText('${item.id}')" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (e) { container.innerHTML = "Error loading."; }
+    };
+
+    window.editText = (id, urdu, cat, poet) => {
+        document.getElementById('editId').value = id;
+        document.getElementById('urduInput').value = urdu;
+        document.getElementById('categoryInput').value = cat;
+        document.getElementById('poetInput').value = poet;
+        document.getElementById('formTitle').innerText = "Edit Shayari";
+        document.getElementById('saveBtn').innerText = "Update Changes";
+        document.getElementById('cancelEditBtn').style.display = "block";
+        window.scrollTo(0, 0);
+    };
+
+    window.resetForm = () => {
+        document.getElementById('editId').value = "";
+        document.getElementById('urduInput').value = "";
+        document.getElementById('poetInput').value = "";
+        document.getElementById('formTitle').innerText = "Add New Shayari";
+        document.getElementById('saveBtn').innerText = "Publish Shayari";
+        document.getElementById('cancelEditBtn').style.display = "none";
+    };
+
+    window.deleteText = async (id) => {
+        if(confirm("Are you sure you want to delete this text shayari?")) {
+            await deleteDoc(doc(db, TEXT_COL, id));
+            loadTextShayari();
+        }
+    };
+
+    // --- Photo Shayari Logic (Supabase) ---
+    window.addPhotoShayari = async () => {
+        const url = document.getElementById('photoUrlInput').value.trim();
+        const cat = document.getElementById('photoCategoryInput').value;
+
+        if(!url) return alert("Enter URL");
+
+        try {
+            const { error } = await supabase
+                .from('photo_shayari')
+                .insert([{ image_url: url, category: cat }]);
+
+            if (error) throw error;
+
+            document.getElementById('photoUrlInput').value = "";
+            loadPhotoShayari();
+            alert("Photo Added to Supabase!");
+        } catch (e) { alert("Supabase Error: " + e.message); }
+    };
+
+    window.loadPhotoShayari = async () => {
+        const container = document.getElementById('photoTableBody');
+        container.innerHTML = "<tr><td colspan='4' class='text-center'>Loading from Supabase...</td></tr>";
+        try {
+            const { data, error } = await supabase
+                .from('photo_shayari')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            document.getElementById('photoCount').innerText = data.length;
+            container.innerHTML = "";
+
+            if (data.length === 0) {
+                container.innerHTML = "<tr><td colspan='4' class='text-center text-muted'>No photos in Supabase.</td></tr>";
+                return;
+            }
+
+            data.forEach(item => {
+                container.innerHTML += `
+                    <tr>
+                        <td>
+                            <a href="${item.image_url}" target="_blank">
+                                <img src="${item.image_url}" class="img-preview" onerror="this.src='https://via.placeholder.com/80?text=Error'">
+                            </a>
+                        </td>
+                        <td><span class="badge bg-info text-dark">${item.category}</span></td>
+                        <td class="small text-muted text-truncate" style="max-width: 300px;">${item.image_url}</td>
+                        <td>
+                            <button onclick="deletePhoto('${item.id}')" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (e) {
+            container.innerHTML = `<tr><td colspan='4' class='text-center text-danger'>Supabase Error: ${e.message}</td></tr>`;
+        }
+    };
+
+    window.deletePhoto = async (id) => {
+        if(confirm("Delete from Supabase?")) {
+            const { error } = await supabase
+                .from('photo_shayari')
+                .delete()
+                .eq('id', id);
+
+            if (error) alert(error.message);
+            else loadPhotoShayari();
+        }
+    };
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

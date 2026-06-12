@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "urdu": "تمہارا ذکر دل کو اچھا لگتا ہے\nمحبت کی ہر دعا تمہارے نام ہے",
+    "roman": "Tumhara zikr dil ko acha lagta hai\nMohabbat ki har dua tumhare naam hai",
+    "english": "The mention of you feels good to the heart\nEvery prayer of love is in your name",
+    "category": "Love",
+    "poet": "Unknown",
+    "timestamp": 1717934400000
+  },
+  {
+    "id": 2,
+    "urdu": "تیری محبت دل میں ہمیشہ رہے گی\nخوبصورت کہانی ہو تم میری",
+    "roman": "Teri mohabbat dil mein hamesha rahegi\nKhoobsurat kahani ho tum meri",
+    "english": "Your love will always remain in my heart\nYou are my beautiful story",
+    "category": "Love",
+    "poet": "Unknown",
+    "timestamp": 1717934400001
+  },
+  {
+    "id": 3,
+    "urdu": "کبھی کبھی دل اداس ہو جاتا ہے\nتمہاری یادوں میں کھو جاتا ہے",
+    "roman": "Kabhi kabhi dil udaas ho jata hai\nTumhari yaadon mein kho jata hai",
+    "english": "Sometimes the heart becomes sad\nAnd gets lost in your memories",
+    "category": "Sad",
+    "poet": "Unknown",
+    "timestamp": 1717934400002
+  },
+  {
+    "id": 4,
+    "urdu": "دوستی کا رشتہ سب سے پیارا ہے\nتم بن زندگی کا ہر پل ادھورا ہے",
+    "roman": "Dosti ka rishta sab se pyara hai\nTum bin zindagi ka har pal adhura hai",
+    "english": "The bond of friendship is the dearest\nWithout you, every moment of life is incomplete",
+    "category": "Friendship",
+    "poet": "Unknown",
+    "timestamp": 1717934400003
+  }
+]
