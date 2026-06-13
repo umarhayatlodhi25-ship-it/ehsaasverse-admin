@@ -1,0 +1,20 @@
+export const STANDARD_CATEGORIES = [
+  "Love",
+  "Sad",
+  "Motivation",
+  "Friendship",
+  "Yaad",
+  "Zindagi",
+  "Khwab",
+  "Intezar",
+  "Dard",
+  "Dua",
+  "Barish",
+  "Tanhai",
+  "Bewafa",
+  "Mashhoor",
+  "Judai",
+  "Aansu",
+  "Ishq",
+  "General"
+];
